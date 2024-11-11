@@ -23,7 +23,7 @@ func contactHandler(w http.ResponseWriter, r *http.Request) {
 func faqHandler(w http.ResponseWriter, r *http.Request) {
 	// Creating a data bucket for the content.
 	var qaYaml struct {
-		questions string `yaml:"Content"`
+		Questions string `yaml:"Content"`
 	}
 
 	// Opening the file for reading only.
@@ -41,7 +41,7 @@ func faqHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprintf(w, "<h1>QA page</h1><p>%s</p>", qaYaml.questions)
+	fmt.Fprintf(w, "<h1>QA page</h1><p>%s</p>", qaYaml.Questions)
 }
 
 func pathHandler(w http.ResponseWriter, r *http.Request) {
