@@ -1,4 +1,4 @@
-package main
+package olderversions
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/go-yaml/yaml"
 )
 
@@ -64,26 +63,18 @@ func pathHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "\nThe current path is %s", r.URL.Path)
 }
 
-func getAll(router *chi.Mux) {
-	router.Get("/", homeHandler)
-	router.Get("/contact", contactHandler)
-	router.Get("/faq", faqHandler)
-	router.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "Page not found.", http.StatusNotFound)
-	})
+type Router struct{} // A simple implementation to the http.Handler
+// interface. It just needs to have the ServeHTTP method/
+
+func (Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	pathHandler(w, r)
 }
 
-// type Router struct{} // A simple implementation to the http.Handler
-// // interface. It just needs to have the ServeHTTP method/
-
-// func (Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-// 	pathHandler(w, r)
-// }
-
 func main() {
-	myRouter := chi.NewRouter()
-	// Set the routes in the router object.
-	getAll(myRouter)
+	var myRouter Router
+	// http.HandleFunc("/", homeHandler)
+	// http.HandleFunc("/contact", contactHandler)
+	// http.HandleFunc("/", pathHandler)
 	fmt.Println("Starting the server on: 3000...")
 	http.ListenAndServe(":3000", myRouter)
 }
