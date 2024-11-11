@@ -50,6 +50,8 @@ func pathHandler(w http.ResponseWriter, r *http.Request) {
 		homeHandler(w, r)
 	case "/contact":
 		contactHandler(w, r)
+	case "/faq":
+		faqHandler(w, r)
 	default:
 		http.Error(w, "Page not found.", http.StatusNotFound)
 
@@ -62,8 +64,7 @@ type Router struct{} // A simple implementation to the http.Handler
 // interface. It just needs to have the ServeHTTP method/
 
 func (Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	myHandler := pathHandler
-	myHandler(w, r)
+	pathHandler(w, r)
 }
 
 func main() {
