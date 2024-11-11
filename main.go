@@ -9,12 +9,17 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-yaml/yaml"
 )
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
+	sentence := chi.URLParam(r, "sentence")
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprintf(w, "<h1>Welcome to my awesome site!</h1>")
+	fmt.Fprintf(w, "<h1>Welcome to my awesome site!</h1>"+
+		fmt.Sprintf("<p>%s</p>", sentence),
+	)
 }
 
 func contactHandler(w http.ResponseWriter, r *http.Request) {
@@ -48,24 +53,25 @@ func faqHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "<h1>QA page</h1><p>%s</p>", formattedContent)
 }
 
-func pathHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.URL.Path {
-	case "/":
-		homeHandler(w, r)
-	case "/contact":
-		contactHandler(w, r)
-	case "/faq":
-		faqHandler(w, r)
-	default:
-		http.Error(w, "Page not found.", http.StatusNotFound)
+// func pathHandler(w http.ResponseWriter, r *http.Request) {
+// 	switch r.URL.Path {
+// 	case "/":
+// 		homeHandler(w, r)
+// 	case "/contact":
+// 		contactHandler(w, r)
+// 	case "/faq":
+// 		faqHandler(w, r)
+// 	default:
+// 		http.Error(w, "Page not found.", http.StatusNotFound)
 
-	}
+// 	}
 
-	fmt.Fprintf(w, "\nThe current path is %s", r.URL.Path)
-}
+// 	fmt.Fprintf(w, "\nThe current path is %s", r.URL.Path)
+// }
 
 func getAll(router *chi.Mux) {
-	router.Get("/", homeHandler)
+	// router.Use(middleware.Logger)
+	router.With(middleware.Logger).Get("/{sentence}", homeHandler)
 	router.Get("/contact", contactHandler)
 	router.Get("/faq", faqHandler)
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) {
