@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"html"
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/go-yaml/yaml"
 )
@@ -40,8 +42,9 @@ func faqHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	formattedContent := strings.ReplaceAll(html.EscapeString(qaYaml.Questions), "\n", "<br>")
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprintf(w, "<h1>QA page</h1><p>%s</p>", qaYaml.Questions)
+	fmt.Fprintf(w, "<h1>QA page</h1><p>%s</p>", formattedContent)
 }
 
 func pathHandler(w http.ResponseWriter, r *http.Request) {
