@@ -1,10 +1,16 @@
 <h1>Hello, {{.Name}}</h1>
-<p>{{.Bio}}</p>
+<p>Bio: {{.Bio}}</p>
+<p>Birthday: {{.Birthday}}</p>
+<p>Address: {{.Address}}</p>
+<p>Again, the city is: {{.Address.City}}</p>
 
 <script>
 const user = {
     "name": {{.Name}},
     "bio": {{.Bio}}
+    "Birthday": {{.Birthday}}
+    "Address": {{.Address}}
+    "Street": {{.Address.Street}}
 };
 console.log(user);
 </script>
