@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"html"
 	"html/template"
 	"io"
 	"log"
@@ -15,11 +14,11 @@ import (
 	"github.com/go-yaml/yaml"
 )
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
+func executeTemplate(w http.ResponseWriter, templatePath string, templateBody any) {
 	// Setting up the response's header before further processing.
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	tpl, err := template.ParseFiles("/home/ccat/Repos/web_go_course/templates/home.gohtml")
+	tpl, err := template.ParseFiles(templatePath)
 	if err != nil {
 		log.Printf("Error when parsing the tamplate: %v", err)
 		http.Error(w, fmt.Sprintf("Error when parsing template: %v", err), http.StatusInternalServerError)
@@ -29,7 +28,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	// Writing the html page into a buffer to make sure we don't have an error
 	// before writing to the respinse writer.
 	var actualRes bytes.Buffer
-	if err := tpl.Execute(&actualRes, nil); err != nil {
+	if err := tpl.Execute(&actualRes, templateBody); err != nil {
 		http.Error(w, fmt.Sprintf("Error when executing html: %v", err), http.StatusInternalServerError)
 		return
 	}
@@ -42,16 +41,20 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	templatePath := "/home/ccat/Repos/web_go_course/templates/home.gohtml"
+	executeTemplate(w, templatePath, nil)
+}
+
 func contactHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprintf(w, "<h1>Contact page</h1><p>To get in touch, email me at <a"+
-		"href=\"mailto:ccathlete01@gmail.com\">ccathlete01@gmail.com\n</a>.</p>")
+	templatePath := "/home/ccat/Repos/web_go_course/templates/contact.gohtml"
+	executeTemplate(w, templatePath, nil)
 }
 
 func faqHandler(w http.ResponseWriter, r *http.Request) {
 	// Creating a data bucket for the content.
 	var qaYaml struct {
-		Questions string `yaml:"Content"`
+		Questions template.HTML `yaml:"Content"`
 	}
 
 	// Opening the file for reading only.
@@ -68,9 +71,11 @@ func faqHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	formattedContent := strings.ReplaceAll(html.EscapeString(qaYaml.Questions), "\n", "<br>")
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprintf(w, "<h1>QA page</h1><p>%s</p>", formattedContent)
+	// Converting the questions into a string , replacing parts and converting back to template.HTML.
+	formattedContent := template.HTML(strings.ReplaceAll(string(qaYaml.Questions), "\n", "<br>"))
+	qaYaml.Questions = formattedContent
+	templatePath := "/home/ccat/Repos/web_go_course/templates/faq.gohtml"
+	executeTemplate(w, templatePath, qaYaml)
 }
 
 func getAll(router *chi.Mux) {
