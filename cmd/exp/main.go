@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -33,19 +32,19 @@ func executeTemplate(w http.ResponseWriter, templatePath string, templateBody an
 	}
 
 	// TODO: find out why it prints only in the console or only as a web page.
-	// // In case we didn't get an error we can now stream the data into the resonse writer.
-	// if _, err := io.Copy(w, &actualRes); err != nil {
-	// 	log.Printf("Error when writing the response: %v", err)
-	// 	http.Error(w, fmt.Sprintf("Error when writing the response: %v", err), http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// We stream the data into os.stdout.
-	if _, err := io.Copy(os.Stdout, &actualRes); err != nil {
+	// In case we didn't get an error we can now stream the data into the resonse writer.
+	if _, err := io.Copy(w, &actualRes); err != nil {
 		log.Printf("Error when writing the response: %v", err)
 		http.Error(w, fmt.Sprintf("Error when writing the response: %v", err), http.StatusInternalServerError)
 		return
 	}
+
+	// // We stream the data into os.stdout.
+	// if _, err := io.Copy(os.Stdout, &actualRes); err != nil {
+	// 	log.Printf("Error when writing the response: %v", err)
+	// 	http.Error(w, fmt.Sprintf("Error when writing the response: %v", err), http.StatusInternalServerError)
+	// 	return
+	// }
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -59,6 +58,11 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 			HouseNum     int
 			Street, City string
 		}
+		TestField1 map[string]int
+		TestField2 float64
+		TestField3 []byte
+		Condition1 bool
+		Condition2 bool
 	}{
 		Name:     "Ken",
 		Bio:      "<script>alert(Haha you've been h4x0r3d!);</script>",
@@ -70,7 +74,15 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 			HouseNum: 100,
 			Street:   "Derech Haking",
 			City:     "Prešov"},
+		TestField1: map[string]int{"f1": 1, "f2": 2},
+		TestField2: 1.234,
+		TestField3: []byte{1, 2, 3},
 	}
+
+	// user.Condition1 = user.TestField1["f1"] >= int(user.TestField3[0])
+	user.Condition1 = user.TestField1["f1"] > int(user.TestField3[0])
+	// user.Condition2 = user.TestField1["f1"] == int(user.TestField3[0])
+	user.Condition2 = user.TestField1["f1"] < int(user.TestField3[0])
 
 	executeTemplate(w, templatePath, user)
 }

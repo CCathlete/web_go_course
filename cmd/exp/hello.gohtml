@@ -3,6 +3,19 @@
 <p>Birthday: {{.Birthday}}</p>
 <p>Address: {{.Address}}</p>
 <p>Again, the city is: {{.Address.City}}</p>
+<p>Testing the map field: {{.TestField1}}</p>
+<p>Testing an inner key:value pair in the map field: {{index .TestField1 "f1"}}</p>
+<p>Testing the float field: {{.TestField2}}</p>
+<p>Testing the slice field: {{.TestField3}}</p>
+<p>Testing an inner value (index 2) in the slice field: {{index .TestField3 2}}</p>
+<p>Checking a condition:</p>
+{{if .Condition1}}
+    <p>Condition 1 is true</p>
+{{else if .Condition2}}
+    <p>Condition 1 is false but condition 2 is true</p>
+{{else}}
+    <p>Both condition 1 and condition 2 are false</p>
+{{end}}
 
 <script>
 const user = {
