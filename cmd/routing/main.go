@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -18,16 +17,11 @@ func executeTemplate(w http.ResponseWriter, templatePath string, innerData any) 
 	// Setting up the response's header before further processing.
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	tpl, err := template.ParseFiles(templatePath)
-	if err != nil {
-		log.Printf("Error when parsing the tamplate: %v", err)
-		http.Error(w, fmt.Sprintf("Error when parsing template: %v", err), http.StatusInternalServerError)
-		return
-	}
+	// Parsing the template and creating a template object.
+	// Writing an error in the response if there is one.
+	viewTpl := views.ParseTempate(w, templatePath)
 
-	viewTpl := views.Template{
-		HtmlTpl: tpl,
-	}
+	// Executing the template and writing the http page resulting from it.
 	viewTpl.Execute(w, innerData)
 }
 

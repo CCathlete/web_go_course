@@ -13,6 +13,19 @@ type Template struct {
 	HtmlTpl *template.Template
 }
 
+func ParseTempate(w http.ResponseWriter, templatePath string) *Template {
+	tpl, err := template.ParseFiles(templatePath)
+	if err != nil {
+		log.Printf("Error when parsing the tamplate: %v", err)
+		http.Error(w, fmt.Sprintf("Error when parsing template: %v", err), http.StatusInternalServerError)
+		return nil
+	}
+
+	return &Template{
+		HtmlTpl: tpl,
+	}
+}
+
 func (tpl *Template) Execute(w http.ResponseWriter, data any) {
 	// Writing the html page into a buffer to make sure we don't have an error
 	// before writing to the respinse writer.
