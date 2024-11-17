@@ -13,17 +13,15 @@ type Template struct {
 	HtmlTpl *template.Template
 }
 
-func ParseTempate(w http.ResponseWriter, templatePath string) *Template {
+func ParseTemplate(templatePath string) (*Template, error) {
 	tpl, err := template.ParseFiles(templatePath)
 	if err != nil {
-		log.Printf("Error when parsing the tamplate: %v", err)
-		http.Error(w, fmt.Sprintf("Error when parsing template: %v", err), http.StatusInternalServerError)
-		return nil
+		return nil, fmt.Errorf("error while parsing the template in %s: %w", templatePath, err)
 	}
 
 	return &Template{
 		HtmlTpl: tpl,
-	}
+	}, nil
 }
 
 func (tpl *Template) Execute(w http.ResponseWriter, data any) {
