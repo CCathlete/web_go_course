@@ -32,7 +32,7 @@ import (
 // 	executeTemplate(w, templatePath, nil)
 // }
 
-func getQuestionsTemplate(questionsPath string) (*template.HTML, error) {
+func getQuestionsTemplate(questionsPath string) (interface{}, error) {
 	// Creating a data bucket for the content.
 	var qaYaml struct {
 		Questions template.HTML `yaml:"Content"`
@@ -54,7 +54,7 @@ func getQuestionsTemplate(questionsPath string) (*template.HTML, error) {
 	formattedContent := template.HTML(strings.ReplaceAll(string(qaYaml.Questions), "\n", "<br>"))
 	qaYaml.Questions = formattedContent // The questions in html template form and newlines.
 
-	return &qaYaml.Questions, nil
+	return &qaYaml, nil
 }
 
 func staticHandler(tpl *views.Template, routeSuffix string) http.HandlerFunc {
@@ -82,9 +82,11 @@ func getAll(router *chi.Mux) {
 	if err != nil {
 		panic(err)
 	}
-	templateList := yamlData.(map[string]string)
+	templateList := yamlData.(map[interface{}]interface{})
 
 	for routeSuffix, templatePath := range templateList {
+		routeSuffix := routeSuffix.(string)
+		templatePath := templatePath.(string)
 		template, err := views.ParseTemplate(templatePath)
 		if err != nil {
 			panic(err)
