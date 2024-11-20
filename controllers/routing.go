@@ -59,20 +59,17 @@ func StaticHandler(tpl *views.Template, routeSuffix string) http.HandlerFunc {
 func GetAll(router *chi.Mux) {
 	// router.Use(middleware.Logger)
 	// templateList := make(map[string]string) // Template list yaml routeSuffix: templatePath.
-	yamlData, err := views.ParseYaml("templatePaths.yaml")
-	if err != nil {
-		panic(err)
-	}
+	yamlData := views.Must(views.ParseYaml("templatePaths.yaml"))
 	templateList := yamlData.(map[interface{}]interface{})
 
 	for routeSuffix, templatePath := range templateList {
 		routeSuffix := routeSuffix.(string)
 		templatePath := templatePath.(string)
-		template, err := views.ParseTemplate(templatePath)
-		if err != nil {
-			panic(err)
-		}
-		router.Get(fmt.Sprintf("/%s", routeSuffix), StaticHandler(template, routeSuffix))
+
+		// We need to assert at the end because Must returns an interface.
+		template := views.Must(views.ParseTemplate(templatePath)).(*views.Template)
+		router.Get(fmt.Sprintf("/%s", routeSuffix),
+			StaticHandler(template, routeSuffix))
 	}
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Page not found.", http.StatusNotFound)

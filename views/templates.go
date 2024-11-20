@@ -24,6 +24,22 @@ func ParseTemplate(templatePath string) (*Template, error) {
 	}, nil
 }
 
+// func Must(tpl *Template, err error) *Template {
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	return tpl
+// }
+
+func Must(tpl any, err error) any {
+	if err != nil {
+		panic(err)
+	}
+
+	return tpl
+}
+
 func (tpl *Template) Execute(w http.ResponseWriter, data any) {
 	// Writing the html page into a buffer to make sure we don't have an error
 	// before writing to the respinse writer.
