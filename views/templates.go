@@ -25,8 +25,9 @@ func ParseTemplate(templatePath string) (*Template, error) {
 	}, nil
 }
 
-func ParseFS(fs embed.FS, pattern string) (*Template, error) {
-	tpl, err := template.ParseFS(fs, pattern)
+// ...string turns patterns into a slice inside the function, pattern... expodes the slice into separate variable.
+func ParseFS(fs embed.FS, pattern ...string) (*Template, error) {
+	tpl, err := template.ParseFS(fs, pattern...)
 	if err != nil {
 		return nil, fmt.Errorf("error when parsing template: %w", err)
 	}
