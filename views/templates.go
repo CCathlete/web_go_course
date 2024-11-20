@@ -2,6 +2,7 @@ package views
 
 import (
 	"bytes"
+	"embed"
 	"fmt"
 	"html/template"
 	"io"
@@ -24,13 +25,16 @@ func ParseTemplate(templatePath string) (*Template, error) {
 	}, nil
 }
 
-// func Must(tpl *Template, err error) *Template {
-// 	if err != nil {
-// 		panic(err)
-// 	}
+func ParseFS(fs embed.FS, pattern string) (*Template, error) {
+	tpl, err := template.ParseFS(fs, pattern)
+	if err != nil {
+		return nil, fmt.Errorf("error when parsing template: %w", err)
+	}
 
-// 	return tpl
-// }
+	return &Template{
+		HtmlTpl: tpl,
+	}, nil
+}
 
 func Must(tpl any, err error) any {
 	if err != nil {
