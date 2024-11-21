@@ -39,24 +39,6 @@ func getQuestionsTemplate(questionsFileName string) (interface{}, error) {
 	return &qaYaml, nil
 }
 
-func StaticHandler(tpl *views.Template, routeSuffix string) http.HandlerFunc {
-	// var data *template.HTML
-	var data interface{}
-	var err error
-	if routeSuffix == "faq" {
-		data, err = getQuestionsTemplate("QA.yaml")
-		if err != nil {
-			return func(w http.ResponseWriter, r *http.Request) {
-				http.Error(w, fmt.Sprintf("Error while parsing the questions yaml: %v", err), http.StatusInternalServerError)
-			}
-		}
-	}
-
-	return func(w http.ResponseWriter, r *http.Request) {
-		tpl.Execute(w, data)
-	}
-}
-
 func GetAll(router *chi.Mux) {
 	// router.Use(middleware.Logger)
 	templateList := map[string]string{
