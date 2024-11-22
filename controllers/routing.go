@@ -51,7 +51,7 @@ func GetAll(router *chi.Mux) {
 	for routeSuffix, templatePath := range templateList {
 
 		// We need to assert at the end because Must returns an interface.
-		template := views.Must(views.ParseFS(templates.FS, templatePath, "layout-parts.gohtml")).(*views.Template)
+		template := views.Must(views.ParseFS(templates.FS, templatePath, "tailwind.gohtml")).(*views.Template)
 		router.Get(fmt.Sprintf("/%s", routeSuffix),
 			StaticHandler(template, routeSuffix))
 	}
