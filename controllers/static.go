@@ -57,11 +57,7 @@ func FAQ(tpl Template) http.HandlerFunc {
 
 func StaticPostHandler(tpl Template, routeSuffix string) http.HandlerFunc {
 	switch routeSuffix {
-	case "faq":
-		return func(w http.ResponseWriter, r *http.Request) {
-			fmt.Println("Creating a new FAQ (POST).")
-		}
-	case "signup":
+	case "users":
 		usersC := Users{
 			Templates: struct {
 				New Template
@@ -69,7 +65,7 @@ func StaticPostHandler(tpl Template, routeSuffix string) http.HandlerFunc {
 				tpl,
 			},
 		}
-		return usersC.New()
+		return usersC.Create()
 	default:
 		return func(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("POST request doing something.")

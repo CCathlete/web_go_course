@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -15,5 +16,12 @@ type Users struct {
 func (u Users) New() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u.Templates.New.Execute(w, u.Data)
+	}
+}
+
+func (u Users) Create() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Email: %s\n", r.FormValue("email"))
+		fmt.Fprintf(w, "Password: %s\n", r.FormValue("password"))
 	}
 }
