@@ -8,8 +8,8 @@ import (
 func StaticHandler(tpl *views.Template, routeSuffix string) http.HandlerFunc {
 	// var data *template.HTML
 	var data interface{}
-
-	if routeSuffix == "faq" {
+	switch routeSuffix {
+	case "faq":
 		// var err error
 		// data, err = getQuestionsTemplate("QA.yaml")
 		// if err != nil {
@@ -18,10 +18,19 @@ func StaticHandler(tpl *views.Template, routeSuffix string) http.HandlerFunc {
 		// 	}
 		// }
 		return FAQ(tpl)
-	}
-
-	return func(w http.ResponseWriter, r *http.Request) {
-		tpl.Execute(w, data)
+	case "signup":
+		usersC := Users{
+			Templates: struct {
+				New *views.Template
+			}{
+				tpl,
+			},
+		}
+		return usersC.New()
+	default:
+		return func(w http.ResponseWriter, r *http.Request) {
+			tpl.Execute(w, data)
+		}
 	}
 }
 
