@@ -21,7 +21,7 @@ func StaticHandler(tpl *views.Template, routeSuffix string) http.HandlerFunc {
 	case "signup":
 		usersC := Users{
 			Templates: struct {
-				New *views.Template
+				New Template
 			}{
 				tpl,
 			},

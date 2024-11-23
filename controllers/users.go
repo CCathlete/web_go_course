@@ -2,13 +2,12 @@ package controllers
 
 import (
 	"net/http"
-	"webGo/views"
 )
 
 type Users struct {
 	// Template struct we'll store all of the needed templaes in.
 	Templates struct {
-		New *views.Template
+		New Template
 	}
 	Data any
 }
