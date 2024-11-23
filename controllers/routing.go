@@ -46,6 +46,7 @@ func GetAll(router *chi.Mux) {
 		"contact":    "contact.gohtml",
 		"faq":        "faq.gohtml",
 		"myproducts": "In_construction.gohtml",
+		"signup":     "signup.gohtml",
 	}
 
 	for routeSuffix, templatePath := range templateList {
