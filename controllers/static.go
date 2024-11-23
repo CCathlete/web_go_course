@@ -1,11 +1,11 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
-	"webGo/views"
 )
 
-func StaticHandler(tpl *views.Template, routeSuffix string) http.HandlerFunc {
+func StaticGetHandler(tpl Template, routeSuffix string) http.HandlerFunc {
 	// var data *template.HTML
 	var data interface{}
 	switch routeSuffix {
@@ -34,7 +34,7 @@ func StaticHandler(tpl *views.Template, routeSuffix string) http.HandlerFunc {
 	}
 }
 
-func FAQ(tpl *views.Template) http.HandlerFunc {
+func FAQ(tpl Template) http.HandlerFunc {
 	questions := []struct{ Question, Answer string }{
 		{
 			Question: "Alternative Q1",
@@ -52,5 +52,27 @@ func FAQ(tpl *views.Template) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		tpl.Execute(w, questions)
+	}
+}
+
+func StaticPostHandler(tpl Template, routeSuffix string) http.HandlerFunc {
+	switch routeSuffix {
+	case "faq":
+		return func(w http.ResponseWriter, r *http.Request) {
+			fmt.Println("Creating a new FAQ (POST).")
+		}
+	case "signup":
+		usersC := Users{
+			Templates: struct {
+				New Template
+			}{
+				tpl,
+			},
+		}
+		return usersC.New()
+	default:
+		return func(w http.ResponseWriter, r *http.Request) {
+			fmt.Println("POST request doing something.")
+		}
 	}
 }

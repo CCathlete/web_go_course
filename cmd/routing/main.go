@@ -11,7 +11,7 @@ import (
 func main() {
 	myRouter := chi.NewRouter()
 	// Set the routes in the router object.
-	controllers.GetAll(myRouter)
+	controllers.RouteAll(myRouter)
 	fmt.Println("Starting the server on: 3000...")
 	http.ListenAndServe(":3000", myRouter)
 }
