@@ -10,12 +10,15 @@ type Users struct {
 	Templates struct {
 		New Template
 	}
-	Data any
 }
 
 func (u Users) New() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		u.Templates.New.Execute(w, u.Data)
+		var data struct {
+			Email string
+		}
+		data.Email = r.FormValue("email")
+		u.Templates.New.Execute(w, data)
 	}
 }
 
