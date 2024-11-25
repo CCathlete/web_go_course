@@ -17,6 +17,6 @@ services:
     image: adminer
     restart: always
     environment:
-      ADMINER_DESIGN: dracule # Theme (https://github.com/vrana/adminer/tree/master/designs)
+      ADMINER_DESIGN: dracula # Theme (https://github.com/vrana/adminer/tree/master/designs)
     ports: 
       - 3333:8080
