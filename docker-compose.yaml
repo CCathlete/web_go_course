@@ -6,11 +6,12 @@ services:
     image: postgres
     restart: always # Always try to restart if this stops running.
     environment: # Provide environment variables. Format VAR: value.
-      POSTGRES_USER: ccat
-      POSTGRES_PASSWORD: feedthemsibsandpellots
-      POSTGRES_DB: webgo
+      POSTGRES_USER: ${DB_USER}
+      # POSTGRES_PASSWORD: feedthemsibsandpellots
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
     ports: # Exposing ports for apps outside the docker-compose.
-      - "5432:5432" # Format is hostPort:containerPort <=> outside:inside.
+      - "${DB_PORT}:${DB_PORT}" # Format is hostPort:containerPort <=> outside:inside.
 
   # Adminer provides a nice web UI to connect to databases.
   adminer:
