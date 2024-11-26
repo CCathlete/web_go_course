@@ -82,24 +82,71 @@ func main() {
 	// 	panic(err)
 	// }
 
-	id := 4
-	var name, email string
-	row := db.QueryRow(`
-		select name, email
-		from users 
-		where id=$1;
-	`, id)
+	// id := 4
+	// var name, email string
+	// row := db.QueryRow(`
+	// select name, email
+	// from users
+	// where id=$1;
+	// `, id)
+	//
+	// switch err := row.Scan(&name, &email); err {
+	// case sql.ErrNoRows:
+	// fmt.Printf("No matches were found: %v", err)
+	// case nil:
+	// break
+	// default:
+	// panic(err)
+	// }
+	//
+	// fmt.Println(name, email)
 
-	switch err := row.Scan(&name, &email); err {
-	case sql.ErrNoRows:
-		fmt.Printf("No matches were found: %v", err)
-	case nil:
-		break
-	default:
+	// Creating orders for later.
+	// userID := 4
+	// for i := 1; i <= 5; i++ {
+	// 	amount := i * 100
+	// 	desc := fmt.Sprintf("Fake order %d", amount)
+	// 	_, err := db.Exec(`insert into orders
+	// 	(user_id, amount, description)
+	// 	values ($1, $2, $3)`, userID, amount, desc,
+	// 	)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// }
+
+	type Order struct {
+		ID, userID, amount int
+		description        string
+	}
+	var orders []Order
+
+	userID := 4
+	rows, err := db.Query(`
+	select id, amount, description
+	from orders
+	where user_id=$1;
+	`, userID)
+
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var order Order
+		order.userID = userID
+		err := rows.Scan(&order.ID, &order.amount, &order.description)
+		if err != nil {
+			panic(err)
+		}
+		orders = append(orders, order)
+	}
+	if err := rows.Err(); err != nil {
 		panic(err)
 	}
 
-	fmt.Println(name, email)
+	fmt.Printf("The orders of user %d are: %v", userID, orders)
 }
 
 func connectionString() string {
