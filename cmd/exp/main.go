@@ -8,6 +8,20 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
+func main() {
+	db, err := sql.Open("pgx", connectionString())
+	if err != nil {
+		panic("Error when opening db.")
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(fmt.Sprintf("Error when pinging db: %v", err))
+	}
+	fmt.Println("Connected!")
+}
+
 func connectionString() string {
 	PostgresConfig := struct {
 		Host     string
@@ -30,19 +44,4 @@ func connectionString() string {
 		PostgresConfig.Host, PostgresConfig.Port, PostgresConfig.User,
 		PostgresConfig.Password, PostgresConfig.DBName, PostgresConfig.SSLMode,
 	)
-}
-
-func main() {
-	fmt.Println(connectionString())
-	db, err := sql.Open("pgx", connectionString())
-	if err != nil {
-		panic("Error when opening db.")
-	}
-	defer db.Close()
-
-	err = db.Ping()
-	if err != nil {
-		panic(fmt.Sprintf("Error when pinging db: %v", err))
-	}
-	fmt.Println("Connected!")
 }
