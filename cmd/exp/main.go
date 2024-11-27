@@ -23,9 +23,17 @@ func sqlExs() {
 
 		create table if not exists tweets (
 			id serial primary key,
-			user_id int not null,
-			amount int,
-			description text
+			userID int not null,
+			content text,
+			foreign key (userID) references users(id)
+		);
+
+		create table if not exists likes (
+			id serial primary key,
+			tweetID int not null,
+			likerID int,
+			foreign key (likerID) references users(id),
+			foreign key (tweetID) references tweets(id)
 		);
 	`)
 	if err != nil {
@@ -68,71 +76,6 @@ func sqlExs() {
 		{likerID: 5, tweetID: 1},
 	}
 
-	// id := 4
-	// var name, email string
-	// row := db.QueryRow(`
-	// select name, email
-	// from users
-	// where id=$1;
-	// `, id)
-	//
-	// switch err := row.Scan(&name, &email); err {
-	// case sql.ErrNoRows:
-	// fmt.Printf("No matches were found: %v", err)
-	// case nil:
-	// break
-	// default:
-	// panic(err)
-	// }
-	//
-	// fmt.Println(name, email)
-
-	// Creating orders for later.
-	// userID := 4
-	// for i := 1; i <= 5; i++ {
-	// 	amount := i * 100
-	// 	desc := fmt.Sprintf("Fake order %d", amount)
-	// 	_, err := db.Exec(`insert into orders
-	// 	(user_id, amount, description)
-	// 	values ($1, $2, $3)`, userID, amount, desc,
-	// 	)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// }
-
-	type Order struct {
-		ID, userID, amount int
-		description        string
-	}
-	var orders []Order
-
-	userID := 4
-	rows, err := db.Query(`
-	select id, amount, description
-	from orders
-	where user_id=$1;
-	`, userID)
-
-	if err != nil {
-		panic(err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var order Order
-		order.userID = userID
-		err := rows.Scan(&order.ID, &order.amount, &order.description)
-		if err != nil {
-			panic(err)
-		}
-		orders = append(orders, order)
-	}
-	if err := rows.Err(); err != nil {
-		panic(err)
-	}
-
-	fmt.Printf("The orders of user %d are: %v", userID, orders)
 }
 
 func main() {
