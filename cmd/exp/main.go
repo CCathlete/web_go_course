@@ -42,20 +42,20 @@ func sqlExs() {
 
 	fmt.Println("Tables created.")
 
-	// Insert some data.
-	type user struct {
+	// Inserting some data.
+	type User struct {
 		ID       int
 		username string
 	}
-	type tweet struct {
+	type Tweet struct {
 		ID, userID int
 		content    string
 	}
-	type like struct {
+	type Like struct {
 		ID, likerID, tweetID int
 	}
 
-	usersDetails := []user{
+	users := []User{
 		{username: "BilboB"},
 		{username: "FrodoB"},
 		{username: "SamoiseG"},
@@ -63,19 +63,90 @@ func sqlExs() {
 		{username: "Pippin"},
 	}
 
-	userTweets := []tweet{
+	tweets := []Tweet{
 		{userID: 1, content: "Take the ring Frodo."},
 		{userID: 1, content: "I'm old."},
 		{userID: 1, content: "I'm retired."},
 	}
 
-	tweetLikes := []like{
+	likes := []Like{
 		{likerID: 2, tweetID: 1},
 		{likerID: 3, tweetID: 1},
 		{likerID: 4, tweetID: 1},
 		{likerID: 5, tweetID: 1},
 	}
 
+	// Inserting data into users.
+	// insertDummyData := true
+	insertDummyData := false
+	if insertDummyData {
+		for _, user := range users {
+			_, err = db.Exec(`
+		insert into users (username) 
+		values($1);`,
+				user.username)
+
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		fmt.Println("Users data inserted.")
+
+		// Inserting data into tweets.
+		for _, tweet := range tweets {
+			_, err = db.Exec(`
+		insert into tweets (userID, content) 
+		values ($1, $2);`,
+				tweet.userID, tweet.content)
+
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		fmt.Println("Tweets data inserted.")
+
+		// Inserting data into likes.
+		for _, like := range likes {
+			_, err = db.Exec(`
+		insert into likes (likerID, tweetID) 
+		values($1, $2);`,
+				like.likerID, like.tweetID)
+
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		fmt.Println("Likes data inserted.")
+
+	}
+	// Querying specific data.
+	targetUserID := 1
+	rows, err := db.Query(`
+	select users.id as user_id, users.username, tweets.content
+	from users
+	join tweets on users.id = tweets.userID
+	where users.id = $1;`,
+		targetUserID)
+
+	if err != nil {
+		panic(fmt.Errorf("couldn't run query: %w", err))
+	}
+
+	for rows.Next() {
+		var uid int
+		var userName, currentTweet string
+		err := rows.Scan(&uid, &userName, &currentTweet)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("User %s tweeted: %s\n", userName, currentTweet)
+	}
+	if err := rows.Err(); err != nil {
+		panic(err)
+	}
 }
 
 func main() {
