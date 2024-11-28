@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"webGo/models"
 )
@@ -31,7 +30,17 @@ func (u Users) New() http.HandlerFunc {
 // creating a new user.
 func (u Users) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Email: %s\n", r.FormValue("email"))
-		fmt.Fprintf(w, "Password: %s\n", r.FormValue("password"))
+		email := r.FormValue("email")
+		password := r.FormValue("password")
+		// The open db connection is passed inside UserService
+		userInfo, err := u.UserService.Create(email, password)
+		if err != nil {
+			return func(w http.ResponseWriter, r *http.Request) {
+				log.Println(err)
+				http.Error(w, fmt.Errorf("error when creating a new user entry."))
+			}
+		}
+
+		fmt.Fprintf(w, "User created: %+v", userInfo)
 	}
 }

@@ -18,6 +18,7 @@ type UserService struct {
 	DB *sql.DB
 }
 
+// Inserts a new entry to the DB (postgres)
 func (us UserService) Create(email, password string) (*User, error) {
 	email = strings.ToLower(email)
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password),
