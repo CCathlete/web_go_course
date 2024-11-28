@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/hex"
 	"fmt"
 	"os"
 
@@ -26,7 +25,7 @@ func hash(password string) (*[]byte, error) {
 		return nil, fmt.Errorf("error when hashing: %w", err)
 	}
 
-	fmt.Printf("Salted hash value is %v", hex.EncodeToString(saltedHashed))
+	fmt.Printf("Salted hash value is '%v'", string(saltedHashed))
 	return &saltedHashed, nil
 }
 
