@@ -14,6 +14,8 @@ type Users struct {
 	UserService *models.UserService
 }
 
+// Used as a handler function for GET request when
+// getting the template of signing up a new user.
 func (u Users) New() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var data struct {
@@ -25,6 +27,8 @@ func (u Users) New() http.HandlerFunc {
 	}
 }
 
+// Used as a handler function for POST request when
+// creating a new user.
 func (u Users) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Email: %s\n", r.FormValue("email"))
