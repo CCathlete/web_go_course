@@ -3,19 +3,15 @@ package main
 import (
 	"database/sql"
 	"fmt"
-
-	_ "github.com/jackc/pgx/v4/stdlib"
+	"webGo/models"
 )
 
 func sqlExs() {
-	db, err := sql.Open("pgx", connectionString())
-	if err != nil {
-		panic("Error when opening db.")
-	}
+	db := Must(models.ConnectToDB()).(*sql.DB)
 	defer db.Close()
 
 	// Creating a table.
-	_, err = db.Exec(`
+	Must(db.Exec(`
 		create table if not exists users (
 			id serial primary key,
 			username text unique not null
@@ -35,10 +31,7 @@ func sqlExs() {
 			foreign key (likerID) references users(id),
 			foreign key (tweetID) references tweets(id)
 		);
-	`)
-	if err != nil {
-		panic(err)
-	}
+	`))
 
 	fmt.Println("Tables created.")
 
@@ -81,42 +74,30 @@ func sqlExs() {
 	insertDummyData := false
 	if insertDummyData {
 		for _, user := range users {
-			_, err = db.Exec(`
+			Must(db.Exec(`
 		insert into users (username) 
 		values($1);`,
-				user.username)
-
-			if err != nil {
-				panic(err)
-			}
+				user.username))
 		}
 
 		fmt.Println("Users data inserted.")
 
 		// Inserting data into tweets.
 		for _, tweet := range tweets {
-			_, err = db.Exec(`
+			Must(db.Exec(`
 		insert into tweets (userID, content) 
 		values ($1, $2);`,
-				tweet.userID, tweet.content)
-
-			if err != nil {
-				panic(err)
-			}
+				tweet.userID, tweet.content))
 		}
 
 		fmt.Println("Tweets data inserted.")
 
 		// Inserting data into likes.
 		for _, like := range likes {
-			_, err = db.Exec(`
+			Must(db.Exec(`
 		insert into likes (likerID, tweetID) 
 		values($1, $2);`,
-				like.likerID, like.tweetID)
-
-			if err != nil {
-				panic(err)
-			}
+				like.likerID, like.tweetID))
 		}
 
 		fmt.Println("Likes data inserted.")
@@ -124,24 +105,17 @@ func sqlExs() {
 	}
 	// Querying specific data.
 	targetUserID := 1
-	rows, err := db.Query(`
+	rows := Must(db.Query(`
 	select users.id as user_id, users.username, tweets.content
 	from users
 	join tweets on users.id = tweets.userID
 	where users.id = $1;`,
-		targetUserID)
-
-	if err != nil {
-		panic(fmt.Errorf("couldn't run query: %w", err))
-	}
+		targetUserID)).(*sql.Rows)
 
 	for rows.Next() {
 		var uid int
 		var userName, currentTweet string
-		err := rows.Scan(&uid, &userName, &currentTweet)
-		if err != nil {
-			panic(err)
-		}
+		Must(nil, rows.Scan(&uid, &userName, &currentTweet))
 		fmt.Printf("User %s tweeted: %s\n", userName, currentTweet)
 	}
 	if err := rows.Err(); err != nil {

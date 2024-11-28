@@ -8,8 +8,8 @@ import (
 func main() {
 	db := Must(models.ConnectToDB()).(*sql.DB)
 	Must(nil, db.Ping())
-
 	defer db.Close()
+
 	userService := models.UserService{
 		DB: db,
 	}

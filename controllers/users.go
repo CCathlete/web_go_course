@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"webGo/models"
 )
 
 type Users struct {
@@ -10,6 +11,7 @@ type Users struct {
 	Templates struct {
 		New Template
 	}
+	UserService *models.UserService
 }
 
 func (u Users) New() http.HandlerFunc {
@@ -18,6 +20,7 @@ func (u Users) New() http.HandlerFunc {
 			Email string
 		}
 		data.Email = r.FormValue("email")
+		// Putting the template object with the data inside the Users info.
 		u.Templates.New.Execute(w, data)
 	}
 }

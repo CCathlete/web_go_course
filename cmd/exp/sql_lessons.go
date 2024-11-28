@@ -1,12 +1,12 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
+	"webGo/models"
 )
 
 func sqlLessons() {
-	db, err := sql.Open("pgx", connectionString())
+	db, err := models.ConnectToDB()
 	if err != nil {
 		panic("Error when opening db.")
 	}

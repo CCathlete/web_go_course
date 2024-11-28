@@ -17,6 +17,7 @@ type PostgresConfig struct {
 	SSLMode  string
 }
 
+// Make sure to db.Close()!
 func ConnectToDB() (*sql.DB, error) {
 	db, err := sql.Open("pgx", connectionString())
 	if err != nil {
