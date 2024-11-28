@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 	"webGo/models"
 )
@@ -35,12 +37,11 @@ func (u Users) Create() http.HandlerFunc {
 		// The open db connection is passed inside UserService
 		userInfo, err := u.UserService.Create(email, password)
 		if err != nil {
-			return func(w http.ResponseWriter, r *http.Request) {
-				log.Println(err)
-				http.Error(w, fmt.Errorf("error when creating a new user entry."))
-			}
+			log.Println(err)
+			http.Error(w,
+				"Error when creating a new user entry.",
+				http.StatusInternalServerError)
 		}
-
 		fmt.Fprintf(w, "User created: %+v", userInfo)
 	}
 }
