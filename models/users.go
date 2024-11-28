@@ -25,8 +25,8 @@ func (us UserService) Create(email, password string) (*User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error hashing password: %w", err)
 	}
-
 	hashString := string(hashedBytes)
+
 	row := us.DB.QueryRow(`
 	insert into users (email, password_hash)
 	values ($1, $2)
