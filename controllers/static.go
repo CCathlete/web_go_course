@@ -25,14 +25,31 @@ func StaticGetHandler(tpl Template, routeSuffix string) http.HandlerFunc {
 		// Preparing the template for the response to GET requests.
 		usersC := Users{
 			Templates: struct {
-				New Template
+				New    Template
+				SignIn Template
 			}{
 				tpl,
+				nil,
 			},
 			UserService: nil,
 		}
 		// Getting the template of the sign up page.
 		return usersC.New()
+
+	case "signin":
+		// Preparing the template for the response to GET requests.
+		usersC := Users{
+			Templates: struct {
+				New    Template
+				SignIn Template
+			}{
+				nil,
+				tpl,
+			},
+			UserService: nil,
+		}
+		// Getting the template of the sign up page.
+		return usersC.SignIn()
 
 	default:
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -76,9 +93,11 @@ func StaticPostHandler(tpl Template, routeSuffix string) http.HandlerFunc {
 
 		usersC := Users{
 			Templates: struct {
-				New Template
+				New    Template
+				SignIn Template
 			}{
 				tpl,
+				nil,
 			},
 			UserService: &models.UserService{
 				DB: db,

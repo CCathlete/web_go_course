@@ -10,7 +10,8 @@ import (
 type Users struct {
 	// Template struct we'll store all of the needed templaes in.
 	Templates struct {
-		New Template
+		New    Template
+		SignIn Template
 	}
 	UserService *models.UserService
 }
@@ -43,5 +44,18 @@ func (u Users) Create() http.HandlerFunc {
 				http.StatusInternalServerError)
 		}
 		fmt.Fprintf(w, "User created: %+v", userInfo)
+	}
+}
+
+// Used as a handler function for GET request when
+// getting the template of signing in a new user.
+func (u Users) SignIn() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var data struct {
+			Email string
+		}
+		data.Email = r.FormValue("email")
+		// Putting the template object with the data inside the Users info.
+		u.Templates.SignIn.Execute(w, data)
 	}
 }
