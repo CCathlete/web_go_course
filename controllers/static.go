@@ -6,9 +6,10 @@ import (
 	"webGo/models"
 )
 
-func StaticGetHandler(tpl Template, routeSuffix string) http.HandlerFunc {
-	// var data *template.HTML
-	var data interface{}
+func StaticGetHandler(tpl Template, data any, routeSuffix string) http.HandlerFunc {
+	// Preparing the template for the response to GET requests.
+	usersC := Users{}
+
 	switch routeSuffix {
 
 	case "faq":
@@ -22,33 +23,15 @@ func StaticGetHandler(tpl Template, routeSuffix string) http.HandlerFunc {
 		return FAQ(tpl)
 
 	case "signup":
-		// Preparing the template for the response to GET requests.
-		usersC := Users{
-			Templates: struct {
-				New    Template
-				SignIn Template
-			}{
-				tpl,
-				nil,
-			},
-			UserService: nil,
-		}
+		// Assigning the template into the field for new user creation.
+		usersC.Templates.New = tpl
 		// Getting the template of the sign up page.
 		return usersC.New()
 
 	case "signin":
-		// Preparing the template for the response to GET requests.
-		usersC := Users{
-			Templates: struct {
-				New    Template
-				SignIn Template
-			}{
-				nil,
-				tpl,
-			},
-			UserService: nil,
-		}
-		// Getting the template of the sign up page.
+		// Assigning the template into the field for sign in.
+		usersC.Templates.SignIn = tpl
+		// Getting the template of the sign in page.
 		return usersC.SignIn()
 
 	default:

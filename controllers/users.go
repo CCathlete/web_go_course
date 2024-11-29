@@ -59,3 +59,16 @@ func (u Users) SignIn() http.HandlerFunc {
 		u.Templates.SignIn.Execute(w, data)
 	}
 }
+
+// Takes up a web requests and prints put the current user information.
+func (u Users) CurrentUser() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		email, err := r.Cookie("email")
+		if err != nil {
+			fmt.Fprint(w, "The email cookie couldn't be read.")
+			return
+		}
+
+		fmt.Fprintf(w, "Email cookie: %s\n", email.Value)
+	}
+}

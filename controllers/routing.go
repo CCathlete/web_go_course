@@ -49,6 +49,7 @@ func RouteAll(router *chi.Mux) {
 		"signup":     "signup.gohtml",
 		"users":      "signup.gohtml",
 		"signin":     "signin.gohtml",
+		"users/me":   "",
 	}
 
 	for routeSuffix, templatePath := range templateList {
@@ -56,7 +57,7 @@ func RouteAll(router *chi.Mux) {
 		// We need to assert at the end because Must returns an interface.
 		template := views.Must(views.ParseFS(templates.FS, templatePath, "tailwind.gohtml")).(*views.Template)
 		router.Get(fmt.Sprintf("/%s", routeSuffix),
-			StaticGetHandler(template, routeSuffix))
+			StaticGetHandler(template, nil, routeSuffix))
 		if routeSuffix == "users" {
 			router.Post(fmt.Sprintf("/%s", routeSuffix),
 				StaticPostHandler(template, routeSuffix))
@@ -80,7 +81,7 @@ func GetAllNoEmbedding(router *chi.Mux) {
 		// We need to assert at the end because Must returns an interface.
 		template := views.Must(views.ParseTemplate(templatePath)).(*views.Template)
 		router.Get(fmt.Sprintf("/%s", routeSuffix),
-			StaticGetHandler(template, routeSuffix))
+			StaticGetHandler(template, nil, routeSuffix))
 	}
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Page not found.", http.StatusNotFound)
