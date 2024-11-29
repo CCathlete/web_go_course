@@ -55,7 +55,7 @@ func (u Users) Create() http.HandlerFunc {
 }
 
 // Used as a handler function for GET request when
-// getting the template of signing in a new user.
+// getting the template of signing in an exsting user.
 func (u Users) SignIn() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var data struct {
@@ -64,6 +64,32 @@ func (u Users) SignIn() http.HandlerFunc {
 		data.Email = r.FormValue("email")
 		// Putting the template object with the data inside the Users info.
 		u.Templates.SignIn.Execute(w, data)
+	}
+}
+
+// Used as a handler function for POST request for
+// authentication and processing the data of an existing user.
+func (u Users) ProcessSignIn() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var data struct {
+			Email, Password string
+		}
+		data.Email = r.FormValue("email")
+		data.Password = r.FormValue("password")
+		fmt.Println("")
+		log.Printf("Original credentials: \n%+v\n\n", data)
+		userInfo, err := u.UserService.Authenticate(data.Email, data.Password)
+		if err != nil {
+			log.Println("ProcessSignIn: ", err)
+			http.Error(w, "Authentication error.", http.StatusUnauthorized)
+			return
+		}
+
+		// FOR FUTURE USE:
+		// Putting the template object with the data inside the Users info.
+		// u.Templates.SignIn.Execute(w, data)
+
+		fmt.Fprintf(w, "Authentication successful: \n%+v", userInfo)
 	}
 }
 

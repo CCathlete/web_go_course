@@ -49,6 +49,7 @@ func (us UserService) Create(email, password string) (*User, error) {
 }
 
 func (us *UserService) Authenticate(email, password string) (*User, error) {
+	log.Println("Authenticating user credentials.")
 	email = strings.ToLower(email)
 	row := us.DB.QueryRow(`
 	select id, password_hash 

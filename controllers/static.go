@@ -61,28 +61,30 @@ func FAQ(tpl Template) http.HandlerFunc {
 
 func StaticPostHandler(tpl Template, routeSuffix string) http.HandlerFunc {
 	usersC := NewUserController()
+	db, err := models.ConnectToDB()
+	if err != nil {
+		return func(w http.ResponseWriter, r *http.Request) {
+			http.Error(w, fmt.Sprintf("Error connetcing to DB: %v", err), http.StatusInternalServerError)
+		}
+	}
+	usersC.UserService.DB = db
 
 	switch routeSuffix {
 
 	case "users":
-		// Sending back the form (insite the signup template)
+		// Sending back the form (inside the signup template)
 		// with the information for a creation of a new user.
-		db, err := models.ConnectToDB()
-		if err != nil {
-			return func(w http.ResponseWriter, r *http.Request) {
-				http.Error(w, fmt.Sprintf("Error connetcing to DB: %v", err), http.StatusInternalServerError)
-			}
-		}
-
-		// Preparing the template and db connection for POST requests.
 		usersC.Templates.New = tpl
-		usersC.UserService.DB = db
-		// Using the data we got from the POST request.
 		return usersC.Create()
+
+	case "signin":
+		// In a case of a post request to /signin with a form
+		// with the information for authentication of an existing user.
+		return usersC.ProcessSignIn()
 
 	default:
 		return func(w http.ResponseWriter, r *http.Request) {
-			fmt.Println("POST request doing something.")
+			fmt.Println("There's no POST request for ", routeSuffix)
 		}
 	}
 }

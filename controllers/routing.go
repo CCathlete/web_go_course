@@ -53,16 +53,16 @@ func RouteAll(router *chi.Mux) {
 	}
 
 	for routeSuffix, templatePath := range templateList {
-
 		// We need to assert at the end because Must returns an interface.
 		template := views.Must(views.ParseFS(templates.FS, templatePath, "tailwind.gohtml")).(*views.Template)
+
 		router.Get(fmt.Sprintf("/%s", routeSuffix),
 			StaticGetHandler(template, nil, routeSuffix))
-		if routeSuffix == "users" {
-			router.Post(fmt.Sprintf("/%s", routeSuffix),
-				StaticPostHandler(template, routeSuffix))
-		}
+
+		router.Post(fmt.Sprintf("/%s", routeSuffix),
+			StaticPostHandler(template, routeSuffix))
 	}
+
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Page not found.", http.StatusNotFound)
 	})
