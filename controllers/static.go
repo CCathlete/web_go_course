@@ -63,10 +63,13 @@ func FAQ(tpl Template) http.HandlerFunc {
 }
 
 func StaticPostHandler(tpl Template, routeSuffix string) http.HandlerFunc {
+	usersC := Users{}
+
 	switch routeSuffix {
 
 	case "users":
-		// Prepare the template and db connection for POST requests.
+		// Sending back the form (insite the signup template)
+		// with the information for a creation of a new user.
 		db, err := models.ConnectToDB()
 		if err != nil {
 			return func(w http.ResponseWriter, r *http.Request) {
@@ -74,18 +77,9 @@ func StaticPostHandler(tpl Template, routeSuffix string) http.HandlerFunc {
 			}
 		}
 
-		usersC := Users{
-			Templates: struct {
-				New    Template
-				SignIn Template
-			}{
-				tpl,
-				nil,
-			},
-			UserService: &models.UserService{
-				DB: db,
-			},
-		}
+		// Preparing the template and db connection for POST requests.
+		usersC.Templates.New = tpl
+		usersC.UserService.DB = db
 		// Using the data we got from the POST request.
 		return usersC.Create()
 
