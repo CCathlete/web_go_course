@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
@@ -44,5 +45,36 @@ func (us UserService) Create(email, password string) (*User, error) {
 		ID:           id,
 		Email:        email,
 		PasswordHash: hashString,
+	}, nil
+}
+
+func (us *UserService) Authenticate(email, password string) (*User, error) {
+	email = strings.ToLower(email)
+	row := us.DB.QueryRow(`
+	select id, password_hash 
+	from users 
+	where email = $1;
+	`, email)
+
+	var id uint
+	var passHash string
+	err := row.Scan(&id, &passHash)
+	if err != nil {
+		log.Printf("Authentication: %v", err)
+		return nil, fmt.Errorf("error when pulling from DB for authentication")
+	}
+
+	// Hashing the password and comparing it to our stored hash.
+	err = bcrypt.CompareHashAndPassword([]byte(passHash), []byte(password))
+	if err != nil {
+		log.Printf("Authentication: %v", err)
+		return nil, fmt.Errorf("authentication error: wrong password")
+	}
+	log.Println("Authentication successful.")
+
+	return &User{
+		ID:           id,
+		Email:        email,
+		PasswordHash: passHash,
 	}, nil
 }
