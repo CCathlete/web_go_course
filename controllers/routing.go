@@ -49,7 +49,7 @@ func RouteAll(router *chi.Mux) {
 		"signup":     "signup.gohtml",
 		"users":      "signup.gohtml",
 		"signin":     "signin.gohtml",
-		"users/me":   "",
+		"users/me":   "signup.gohtml", // Doesn't matter which template is here.
 	}
 
 	for routeSuffix, templatePath := range templateList {

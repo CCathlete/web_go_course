@@ -16,6 +16,13 @@ type Users struct {
 	UserService *models.UserService
 }
 
+// Returns an initialised users controller.
+func NewUserController() Users {
+	return Users{
+		UserService: &models.UserService{},
+	}
+}
+
 // Used as a handler function for GET request when
 // getting the template of signing up a new user.
 func (u Users) New() http.HandlerFunc {
@@ -70,5 +77,6 @@ func (u Users) CurrentUser() http.HandlerFunc {
 		}
 
 		fmt.Fprintf(w, "Email cookie: %s\n", email.Value)
+		fmt.Fprintf(w, "Headers: %+v\n", r.Header)
 	}
 }

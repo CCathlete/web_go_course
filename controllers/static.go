@@ -8,18 +8,11 @@ import (
 
 func StaticGetHandler(tpl Template, data any, routeSuffix string) http.HandlerFunc {
 	// Preparing the template for the response to GET requests.
-	usersC := Users{}
+	usersC := NewUserController()
 
 	switch routeSuffix {
 
 	case "faq":
-		// var err error
-		// data, err = getQuestionsTemplate("QA.yaml")
-		// if err != nil {
-		// 	return func(w http.ResponseWriter, r *http.Request) {
-		// 		http.Error(w, fmt.Sprintf("Error while parsing the questions yaml: %v", err), http.StatusInternalServerError)
-		// 	}
-		// }
 		return FAQ(tpl)
 
 	case "signup":
@@ -33,6 +26,10 @@ func StaticGetHandler(tpl Template, data any, routeSuffix string) http.HandlerFu
 		usersC.Templates.SignIn = tpl
 		// Getting the template of the sign in page.
 		return usersC.SignIn()
+
+	case "users/me":
+		// Returning info about the current user (from cookies).
+		return usersC.CurrentUser()
 
 	default:
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -63,7 +60,7 @@ func FAQ(tpl Template) http.HandlerFunc {
 }
 
 func StaticPostHandler(tpl Template, routeSuffix string) http.HandlerFunc {
-	usersC := Users{}
+	usersC := NewUserController()
 
 	switch routeSuffix {
 
@@ -89,3 +86,15 @@ func StaticPostHandler(tpl Template, routeSuffix string) http.HandlerFunc {
 		}
 	}
 }
+
+/*
+	case "faq":
+		// var err error
+		// data, err = getQuestionsTemplate("QA.yaml")
+		// if err != nil {
+		// 	return func(w http.ResponseWriter, r *http.Request) {
+		// 		http.Error(w, fmt.Sprintf("Error while parsing the questions yaml: %v", err), http.StatusInternalServerError)
+		// 	}
+		// }
+		return FAQ(tpl)
+*/
