@@ -89,6 +89,13 @@ func (u Users) ProcessSignIn() http.HandlerFunc {
 		// Putting the template object with the data inside the Users info.
 		// u.Templates.SignIn.Execute(w, data)
 
+		cookie := http.Cookie{
+			Name:     "email",
+			Value:    userInfo.Email,
+			Path:     "/", // Any endpoint can access this cookie.
+			HttpOnly: true,
+		}
+		http.SetCookie(w, &cookie)
 		fmt.Fprintf(w, "Authentication successful: \n%+v", userInfo)
 	}
 }
