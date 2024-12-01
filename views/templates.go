@@ -8,6 +8,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/csrf"
 )
 
 type Template struct {
@@ -22,7 +24,7 @@ func ParseFS(fs embed.FS, patterns ...string) (*Template, error) {
 	// I assume this is because the names of functions in the templates are already mentioned so when the parser sees a function it needs to know where to link it.
 	tpl = tpl.Funcs(
 		template.FuncMap{
-			"casrField": func() template.HTML {
+			"csrfField": func() template.HTML {
 				return `<input type="hidden" />`
 			},
 		},
@@ -46,10 +48,18 @@ func Must(tpl any, err error) any {
 }
 
 func (tpl *Template) Execute(w http.ResponseWriter, r *http.Request, data any) {
+	innerTemplate := tpl.HtmlTpl
+	innerTemplate = innerTemplate.Funcs(
+		template.FuncMap{
+			"csrfField": func() template.HTML {
+				return csrf.TemplateField(r)
+			},
+		},
+	)
 	// Writing the html page into a buffer to make sure we don't have an error
 	// before writing to the respinse writer.
 	var actualRes bytes.Buffer
-	if err := tpl.HtmlTpl.Execute(&actualRes, data); err != nil {
+	if err := innerTemplate.Execute(&actualRes, data); err != nil {
 		http.Error(w, fmt.Sprintf("Error when executing html: %v", err), http.StatusInternalServerError)
 		return
 	}
