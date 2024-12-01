@@ -5,6 +5,10 @@
       Create an account
     </h1>
     <form action="/users" method="post">
+      <div class="hidden">
+        <!-- CSRF token that allows a user with a cookie that has the token to get this html. -->
+        {{.CSRFField}}
+      </div>
       <div class="py-2">
         <label for="email" class="text-sm font-semibold text-grey-700">
           Email Address

@@ -33,7 +33,7 @@ func StaticGetHandler(tpl Template, data any, routeSuffix string) http.HandlerFu
 
 	default:
 		return func(w http.ResponseWriter, r *http.Request) {
-			tpl.Execute(w, data)
+			tpl.Execute(w, r, data)
 		}
 	}
 }
@@ -55,7 +55,7 @@ func FAQ(tpl Template) http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		tpl.Execute(w, questions)
+		tpl.Execute(w, r, questions)
 	}
 }
 

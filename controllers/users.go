@@ -32,7 +32,7 @@ func (u Users) New() http.HandlerFunc {
 		}
 		data.Email = r.FormValue("email")
 		// Putting the template object with the data inside the Users info.
-		u.Templates.New.Execute(w, data)
+		u.Templates.New.Execute(w, r, data)
 	}
 }
 
@@ -63,7 +63,7 @@ func (u Users) SignIn() http.HandlerFunc {
 		}
 		data.Email = r.FormValue("email")
 		// Putting the template object with the data inside the Users info.
-		u.Templates.SignIn.Execute(w, data)
+		u.Templates.SignIn.Execute(w, r, data)
 	}
 }
 

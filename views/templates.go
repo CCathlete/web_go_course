@@ -14,19 +14,20 @@ type Template struct {
 	HtmlTpl *template.Template
 }
 
-func ParseTemplate(templatePath string) (*Template, error) {
-	tpl, err := template.ParseFiles(templatePath)
-	if err != nil {
-		return nil, fmt.Errorf("error while parsing the template in %s: %w", templatePath, err)
-	}
-
-	return &Template{
-		HtmlTpl: tpl,
-	}, nil
-}
-
-func ParseFS(fs embed.FS, pattern ...string) (*Template, error) {
-	tpl, err := template.ParseFS(fs, pattern...)
+func ParseFS(fs embed.FS, patterns ...string) (*Template, error) {
+	// Initialises a template object with the name of the base template
+	// to prapare it for parsFS.
+	tpl := template.New(patterns[0])
+	// Inner template functions must be defined before parsing.
+	// I assume this is because the names of functions in the templates are already mentioned so when the parser sees a function it needs to know where to link it.
+	tpl = tpl.Funcs(
+		template.FuncMap{
+			"casrField": func() template.HTML {
+				return `<input type="hidden" />`
+			},
+		},
+	)
+	tpl, err := tpl.ParseFS(fs, patterns...)
 	if err != nil {
 		return nil, fmt.Errorf("error when parsing template: %w", err)
 	}
@@ -44,7 +45,7 @@ func Must(tpl any, err error) any {
 	return tpl
 }
 
-func (tpl *Template) Execute(w http.ResponseWriter, data any) {
+func (tpl *Template) Execute(w http.ResponseWriter, r *http.Request, data any) {
 	// Writing the html page into a buffer to make sure we don't have an error
 	// before writing to the respinse writer.
 	var actualRes bytes.Buffer
@@ -60,3 +61,14 @@ func (tpl *Template) Execute(w http.ResponseWriter, data any) {
 		return
 	}
 }
+
+// func ParseTemplate(templatePath string) (*Template, error) {
+// 	tpl, err := template.ParseFiles(templatePath)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("error while parsing the template in %s: %w", templatePath, err)
+// 	}
+
+// 	return &Template{
+// 		HtmlTpl: tpl,
+// 	}, nil
+// }
