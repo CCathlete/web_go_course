@@ -6,6 +6,8 @@ import (
 	"fmt"
 )
 
+const SessionTokenBytes = 32
+
 // Reads the content of a random num generator and writes it into the underlying array of the byteslice.
 func Bytes(n int) ([]byte, error) {
 	b := make([]byte, n)
@@ -26,9 +28,13 @@ func Bytes(n int) ([]byte, error) {
 func String(n int) (*string, error) {
 	b, err := Bytes(n)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("rand:String: %w", err)
 	}
 
 	sob := base64.URLEncoding.EncodeToString(b)
 	return &sob, nil
+}
+
+func SessionToken() (*string, error) {
+	return String(SessionTokenBytes)
 }

@@ -13,13 +13,15 @@ type Users struct {
 		New    Template
 		SignIn Template
 	}
-	UserService *models.UserService
+	UserService    *models.UserService
+	SessionService *models.SessionService
 }
 
 // Returns an initialised users controller.
 func NewUserController() Users {
 	return Users{
-		UserService: &models.UserService{},
+		UserService:    &models.UserService{},
+		SessionService: &models.SessionService{},
 	}
 }
 
@@ -49,13 +51,30 @@ func (u Users) Create() http.HandlerFunc {
 			http.Error(w,
 				"Error when creating a new user entry.",
 				http.StatusInternalServerError)
+			return
 		}
-		fmt.Fprintf(w, "User created: %+v", userInfo)
+		session, err := u.SessionService.Create(userInfo.ID)
+		if err != nil {
+			log.Println(err)
+			http.Error(w,
+				"Error when creating a new session for the new user.",
+				http.StatusInternalServerError)
+			http.Redirect(w, r, "/signin", http.StatusFound)
+			return
+		}
+		cookie := http.Cookie{
+			Name:     "session",
+			Value:    session.Token,
+			Path:     "/",
+			HttpOnly: true,
+		}
+		http.SetCookie(w, &cookie)
+		http.Redirect(w, r, "/users/me", http.StatusFound)
 	}
 }
 
 // Used as a handler function for GET request when
-// getting the template of signing in an exsting user.
+// getting the template of signing in an existing user.
 func (u Users) SignIn() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var data struct {
@@ -89,27 +108,47 @@ func (u Users) ProcessSignIn() http.HandlerFunc {
 		// Putting the template object with the data inside the Users info.
 		// u.Templates.SignIn.Execute(w, data)
 
+		session, err := u.SessionService.Create(userInfo.ID)
+		if err != nil {
+			log.Println(err)
+			http.Error(w,
+				"Error when creating a new session for the user.",
+				http.StatusInternalServerError)
+			return
+		}
 		cookie := http.Cookie{
-			Name:     "email",
-			Value:    userInfo.Email,
-			Path:     "/", // Any endpoint can access this cookie.
+			Name:     "session",
+			Value:    session.Token,
+			Path:     "/",
 			HttpOnly: true,
 		}
 		http.SetCookie(w, &cookie)
-		fmt.Fprintf(w, "Authentication successful: \n%+v", userInfo)
+		http.Redirect(w, r, "/users/me", http.StatusFound)
 	}
 }
 
 // Takes up a web requests and prints put the current user information.
 func (u Users) CurrentUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		email, err := r.Cookie("email")
+		tokenCookie, err := r.Cookie("session")
 		if err != nil {
-			fmt.Fprint(w, "The email cookie couldn't be read.")
+			log.Println(err)
+			http.Error(w,
+				"No active session, please sign in.",
+				http.StatusInternalServerError)
+			http.Redirect(w, r, "/signin", http.StatusFound)
+			return
+		}
+		user, err := u.SessionService.User(tokenCookie.Value)
+		if err != nil {
+			log.Println(err)
+			http.Error(w,
+				"No active session, please sign in.",
+				http.StatusInternalServerError)
+			http.Redirect(w, r, "/signin", http.StatusFound)
 			return
 		}
 
-		fmt.Fprintf(w, "Email cookie: %s\n", email.Value)
-		fmt.Fprintf(w, "Headers: %+v\n", r.Header)
+		fmt.Fprintf(w, "Current user: %s\n", user.Email)
 	}
 }
