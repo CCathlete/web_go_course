@@ -1,9 +1,11 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"webGo/controllers"
+	"webGo/models"
 	"webGo/rand"
 	"webGo/views"
 
@@ -14,7 +16,13 @@ import (
 func main() {
 	myRouter := chi.NewRouter()
 	// Set the routes in the router object.
-	controllers.RouteAll(myRouter)
+	usersC := controllers.NewUserController()
+	db := views.Must(models.ConnectToDB()).(*sql.DB)
+	defer db.Close()
+	// Setting the initialised db connection inside the services.
+	usersC.UserService.DB, usersC.SessionService.DB = db, db
+
+	controllers.RouteAll(usersC, myRouter)
 	fmt.Println("Starting the server on: 3000...")
 	csrfMW := prepMiddleWare(false) //TODO: change this before deploying.
 	http.ListenAndServe(":3000", csrfMW(myRouter))

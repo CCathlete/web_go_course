@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func RouteAll(router *chi.Mux) {
+func RouteAll(usersC Users, router *chi.Mux) {
 	// router.Use(middleware.Logger)
 	templateList := map[string]string{
 		"":           "home.gohtml",
@@ -27,10 +27,10 @@ func RouteAll(router *chi.Mux) {
 		template := views.Must(views.ParseFS(templates.FS, templatePath, "tailwind.gohtml")).(*views.Template)
 
 		router.Get(fmt.Sprintf("/%s", routeSuffix),
-			StaticGetHandler(template, nil, routeSuffix))
+			StaticGetHandler(usersC, template, nil, routeSuffix))
 
 		router.Post(fmt.Sprintf("/%s", routeSuffix),
-			StaticPostHandler(template, routeSuffix))
+			StaticPostHandler(usersC, template, routeSuffix))
 	}
 
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) {

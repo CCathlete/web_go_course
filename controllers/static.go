@@ -3,12 +3,10 @@ package controllers
 import (
 	"fmt"
 	"net/http"
-	"webGo/models"
 )
 
-func StaticGetHandler(tpl Template, data any, routeSuffix string) http.HandlerFunc {
+func StaticGetHandler(usersC Users, tpl Template, data any, routeSuffix string) http.HandlerFunc {
 	// Preparing the template for the response to GET requests.
-	usersC := NewUserController()
 
 	switch routeSuffix {
 
@@ -59,16 +57,7 @@ func FAQ(tpl Template) http.HandlerFunc {
 	}
 }
 
-func StaticPostHandler(tpl Template, routeSuffix string) http.HandlerFunc {
-	usersC := NewUserController()
-	db, err := models.ConnectToDB()
-	if err != nil {
-		return func(w http.ResponseWriter, r *http.Request) {
-			http.Error(w, fmt.Sprintf("Error connetcing to DB: %v", err), http.StatusInternalServerError)
-		}
-	}
-	usersC.UserService.DB = db
-
+func StaticPostHandler(usersC Users, tpl Template, routeSuffix string) http.HandlerFunc {
 	switch routeSuffix {
 
 	case "users":
