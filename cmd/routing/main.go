@@ -1,10 +1,10 @@
 package main
 
 import (
-	"crypto/rand"
 	"fmt"
 	"net/http"
 	"webGo/controllers"
+	"webGo/rand"
 	"webGo/views"
 
 	"github.com/go-chi/chi/v5"
@@ -23,11 +23,11 @@ func main() {
 // Creats a CSRF key and returns a middleware wrapper for
 // an http router (http.Handler)
 func prepMiddleWare(activate bool) func(http.Handler) http.Handler {
-	csrfKey := make([]byte, 32)
-	views.Must(rand.Read(csrfKey)) // Reads the content of a random num generator and writes it into the underlying array of the byteslice.
+	csrfKey := views.Must(rand.Bytes(32)).([]byte)
 	csrfMW := csrf.Protect(
 		csrfKey,
 		csrf.Secure(activate),
 	)
+
 	return csrfMW
 }

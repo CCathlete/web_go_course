@@ -24,8 +24,8 @@ func ParseFS(fs embed.FS, patterns ...string) (*Template, error) {
 	// I assume this is because the names of functions in the templates are already mentioned so when the parser sees a function it needs to know where to link it.
 	tpl = tpl.Funcs(
 		template.FuncMap{
-			"csrfField": func() template.HTML {
-				return `<input type="hidden" />`
+			"csrfField": func() (template.HTML, error) {
+				return "", fmt.Errorf("csrfField not implemented")
 			},
 		},
 	)
@@ -48,7 +48,14 @@ func Must(tpl any, err error) any {
 }
 
 func (tpl *Template) Execute(w http.ResponseWriter, r *http.Request, data any) {
-	innerTemplate := tpl.HtmlTpl
+	// The inner template field is a pointer so we need to use a copy
+	// before putting in the csrf token during execution to handle multiple users.
+	innerTemplate, err := tpl.HtmlTpl.Clone()
+	if err != nil {
+		log.Printf("Error cloning template (Execute): %v", err)
+		http.Error(w, "There was an error rendering the page.", http.StatusInternalServerError)
+		return
+	}
 	innerTemplate = innerTemplate.Funcs(
 		template.FuncMap{
 			"csrfField": func() template.HTML {
@@ -60,7 +67,8 @@ func (tpl *Template) Execute(w http.ResponseWriter, r *http.Request, data any) {
 	// before writing to the respinse writer.
 	var actualRes bytes.Buffer
 	if err := innerTemplate.Execute(&actualRes, data); err != nil {
-		http.Error(w, fmt.Sprintf("Error when executing html: %v", err), http.StatusInternalServerError)
+		log.Printf("Error executing template: %v", err)
+		http.Error(w, fmt.Sprintf("Error when rendering html: %v", err), http.StatusInternalServerError)
 		return
 	}
 
