@@ -62,13 +62,9 @@ func (u Users) Create() http.HandlerFunc {
 			http.Redirect(w, r, "/signin", http.StatusFound)
 			return
 		}
-		cookie := http.Cookie{
-			Name:     "session",
-			Value:    session.Token,
-			Path:     "/",
-			HttpOnly: true,
-		}
-		http.SetCookie(w, &cookie)
+
+		// Creating a cookie with the session token and setting it in the response.
+		http.SetCookie(w, NewCookie(CookieSession, session.Token))
 		http.Redirect(w, r, "/users/me", http.StatusFound)
 	}
 }
@@ -116,13 +112,9 @@ func (u Users) ProcessSignIn() http.HandlerFunc {
 				http.StatusInternalServerError)
 			return
 		}
-		cookie := http.Cookie{
-			Name:     "session",
-			Value:    session.Token,
-			Path:     "/",
-			HttpOnly: true,
-		}
-		http.SetCookie(w, &cookie)
+
+		// Creating a cookie with the session token and setting it in the response.
+		http.SetCookie(w, NewCookie(CookieSession, session.Token))
 		http.Redirect(w, r, "/users/me", http.StatusFound)
 	}
 }
@@ -130,7 +122,7 @@ func (u Users) ProcessSignIn() http.HandlerFunc {
 // Takes up a web requests and prints put the current user information.
 func (u Users) CurrentUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		tokenCookie, err := r.Cookie("session")
+		tokenCookie, err := r.Cookie(CookieSession)
 		if err != nil {
 			log.Println(err)
 			http.Error(w,
