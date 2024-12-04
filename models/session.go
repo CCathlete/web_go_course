@@ -1,7 +1,9 @@
 package models
 
 import (
+	"crypto/sha256"
 	"database/sql"
+	"encoding/base64"
 	"fmt"
 	"webGo/rand"
 )
@@ -31,7 +33,6 @@ type SessionService struct {
 }
 
 func (ss *SessionService) Create(userID uint) (*Session, error) {
-	// TODO Store session in DB.
 	bytesPerToken := ss.BytesPerToken
 	if bytesPerToken < MinBytesPerToken {
 		bytesPerToken = MinBytesPerToken
@@ -40,15 +41,36 @@ func (ss *SessionService) Create(userID uint) (*Session, error) {
 	if err != nil {
 		return nil, fmt.Errorf("create session: %w", err)
 	}
+	session := Session{
+		UserID:    userID,
+		Token:     *token,
+		TokenHash: ss.hash(*token),
+	}
+	ss.storeTokenHash(session.UserID, session.TokenHash)
 
-	return &Session{
-		UserID: userID,
-		Token:  *token,
-		// TODO set the token's hash.
-	}, nil
+	return &session, nil
 }
 
 func (ss *SessionService) User(token string) (*User, error) {
 	// TODO Implement SessionService.User.
 	return nil, nil
+}
+
+// Hashing the session token using SHA256.
+// We're not using bcrypt since the token is long and random not like a password
+// so there's no need for salt which complicates things.
+// HMAC is also not needed since we don't really need the use of a secret key
+// like we do in digital signatures.
+func (ss *SessionService) hash(token string) string {
+	tokenHash := sha256.Sum256([]byte(token))
+	return base64.URLEncoding.EncodeToString(tokenHash[:])
+}
+
+func (ss *SessionService) storeTokenHash(userID uint, tokenHash string) error {
+	_, err := ss.DB.Exec(`
+	insert into sessions (user_id, token_hash)
+	values ($1, $2);
+	`, userID, tokenHash)
+
+	return err
 }
