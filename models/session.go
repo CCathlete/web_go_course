@@ -46,7 +46,7 @@ func (ss *SessionService) Create(userID uint) (*Session, error) {
 		Token:     *token,
 		TokenHash: ss.hash(*token),
 	}
-	ss.storeTokenHash(session.UserID, session.TokenHash)
+	ss.storeTokenHash(session, true)
 
 	return &session, nil
 }
@@ -66,11 +66,28 @@ func (ss *SessionService) hash(token string) string {
 	return base64.URLEncoding.EncodeToString(tokenHash[:])
 }
 
-func (ss *SessionService) storeTokenHash(userID uint, tokenHash string) error {
-	_, err := ss.DB.Exec(`
-	insert into sessions (user_id, token_hash)
-	values ($1, $2);
-	`, userID, tokenHash)
+// Receives an initialised user session, creates an entry in
+// the sessions DB, stores its token hash and user_id
+// and assigns the session id into the session object.
+func (ss *SessionService) storeTokenHash(s Session, newSession bool) error {
+	if newSession {
+		row := ss.DB.QueryRow(`
+		  insert into sessions (user_id, token_hash)
+		  values ($1, $2)
+		  returning id;
+		`, s.UserID, s.TokenHash)
+		if err := row.Scan(&s.ID); err != nil {
+			return fmt.Errorf("store token hash: %w", err)
+		}
+	} else {
+		_, err := ss.DB.Exec(`
+		update sessions set token_hash = $1 
+		where id = $2 and user_id = $3;
+		`, s.TokenHash, s.ID, s.UserID)
+		if err != nil {
+			return fmt.Errorf("store token hash: %w", err)
+		}
+	}
 
-	return err
+	return nil
 }
