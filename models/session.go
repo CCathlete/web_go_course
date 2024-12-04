@@ -6,6 +6,11 @@ import (
 	"webGo/rand"
 )
 
+const (
+	// Min munber of byter to be used for each session token.
+	MinBytesPerToken = 32
+)
+
 type Session struct {
 	ID     uint
 	UserID uint
@@ -18,11 +23,20 @@ type Session struct {
 
 type SessionService struct {
 	DB *sql.DB
+	// BytesPerToken is used to determine how many bytes to use when generating
+	// each session token. If this value is not set or is less than
+	// MinBytesPerToken const it will be ignored and MinBytesPerToken
+	// will be used.
+	BytesPerToken int
 }
 
 func (ss *SessionService) Create(userID uint) (*Session, error) {
 	// TODO Store session in DB.
-	token, err := rand.SessionToken()
+	bytesPerToken := ss.BytesPerToken
+	if bytesPerToken < MinBytesPerToken {
+		bytesPerToken = MinBytesPerToken
+	}
+	token, err := rand.String(bytesPerToken)
 	if err != nil {
 		return nil, fmt.Errorf("create session: %w", err)
 	}
