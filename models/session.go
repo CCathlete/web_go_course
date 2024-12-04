@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"fmt"
+	"log"
 	"webGo/rand"
 )
 
@@ -46,14 +47,39 @@ func (ss *SessionService) Create(userID uint) (*Session, error) {
 		Token:     *token,
 		TokenHash: ss.hash(*token),
 	}
-	ss.storeTokenHash(session, true)
+	ss.storeTokenHash(session)
 
 	return &session, nil
 }
 
-func (ss *SessionService) User(token string) (*User, error) {
-	// TODO Implement SessionService.User.
-	return nil, nil
+func (ss *SessionService) User(us *UserService, token string) (*User, error) {
+	var user User
+	// Hashing the sessions token.
+	tokenHash := ss.hash(token)
+	// Querying for the session with that hash.
+	row := ss.DB.QueryRow(`
+		  select user_id from sessions
+			where token_hash=$1;
+		`, tokenHash)
+	if err := row.Scan(&user.ID); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("session.User: user doesn't have an opem session")
+		}
+		return nil, fmt.Errorf("session.User: problem with db query -  %w", err)
+	}
+	// userID was found in the sessions table so we query the user db (in this case, same db different tables)
+	row = us.DB.QueryRow(`
+		  select email, password_hash from users
+			where user_id=$1;
+		`, user.ID)
+	if err := row.Scan(&user.Email, &user.PasswordHash); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("session.User: user doesn't exist")
+		}
+		return nil, fmt.Errorf("session.User: problem with db query -  %w", err)
+	}
+
+	return &user, nil
 }
 
 // Hashing the session token using SHA256.
@@ -69,25 +95,48 @@ func (ss *SessionService) hash(token string) string {
 // Receives an initialised user session, creates an entry in
 // the sessions DB, stores its token hash and user_id
 // and assigns the session id into the session object.
-func (ss *SessionService) storeTokenHash(s Session, newSession bool) error {
-	if newSession {
-		row := ss.DB.QueryRow(`
-		  insert into sessions (user_id, token_hash)
-		  values ($1, $2)
-		  returning id;
+func (ss *SessionService) storeTokenHash(s Session) error {
+	isNewUser, err := ss.isNewUser(s.UserID)
+	if err == nil {
+		if isNewUser { // A new user_id so we create a new entry.
+			row := ss.DB.QueryRow(`
+		insert into sessions (user_id, token_hash)
+		values ($1, $2)
+		returning id;
 		`, s.UserID, s.TokenHash)
-		if err := row.Scan(&s.ID); err != nil {
-			return fmt.Errorf("store token hash: %w", err)
-		}
-	} else {
-		_, err := ss.DB.Exec(`
+			if err := row.Scan(&s.ID); err != nil {
+				return fmt.Errorf("store token hash: %w", err)
+			}
+		} else { // user_id exists so we update the entry.
+			_, err := ss.DB.Exec(`
 		update sessions set token_hash = $1 
 		where id = $2 and user_id = $3;
 		`, s.TokenHash, s.ID, s.UserID)
-		if err != nil {
-			return fmt.Errorf("store token hash: %w", err)
+			if err != nil {
+				return fmt.Errorf("store token hash: %w", err)
+			}
 		}
+	} else { // There has been some error with querying the DB.
+		return fmt.Errorf("store token hash: %w", err)
 	}
 
 	return nil
+}
+
+func (ss *SessionService) isNewUser(userID uint) (bool, error) {
+	var sessionID uint
+	row := ss.DB.QueryRow(`
+		  select id from sessions
+			where user_id=$1;
+		`, userID)
+	switch err := row.Scan(&sessionID); err {
+	case sql.ErrNoRows:
+		log.Printf("User is new and does not have a session.")
+		return true, nil
+	case nil:
+		log.Printf("User already exists and has a session.")
+		return false, nil
+	default:
+		return false, fmt.Errorf("query session: %w", err)
+	}
 }

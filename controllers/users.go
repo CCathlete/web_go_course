@@ -131,7 +131,9 @@ func (u Users) CurrentUser() http.HandlerFunc {
 			http.Redirect(w, r, "/signin", http.StatusFound)
 			return
 		}
-		user, err := u.SessionService.User(tokenCookie.Value)
+		// We're passing the user service in because we want to query
+		// the DB where the users are in.
+		user, err := u.SessionService.User(u.UserService, tokenCookie.Value)
 		if err != nil {
 			log.Println(err)
 			http.Error(w,
@@ -141,6 +143,7 @@ func (u Users) CurrentUser() http.HandlerFunc {
 			return
 		}
 
-		fmt.Fprintf(w, "Current user: %s\n", user.Email)
+		fmt.Fprintf(w, "Current user: %v\n", user)
+		// fmt.Fprintf(w, "Current user: %s\n", user.Email)
 	}
 }
