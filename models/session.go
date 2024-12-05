@@ -48,6 +48,7 @@ func (ss *SessionService) Create(userID uint) (*Session, error) {
 		TokenHash: ss.hash(*token),
 	}
 	ss.storeTokenHash(session)
+	fmt.Printf("models.Create: session is %v\n", session)
 
 	return &session, nil
 }
@@ -63,14 +64,14 @@ func (ss *SessionService) User(us *UserService, token string) (*User, error) {
 		`, tokenHash)
 	if err := row.Scan(&user.ID); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("session.User: user doesn't have an opem session")
+			return nil, fmt.Errorf("session.User: user doesn't have an open session")
 		}
 		return nil, fmt.Errorf("session.User: problem with db query -  %w", err)
 	}
 	// userID was found in the sessions table so we query the user db (in this case, same db different tables)
 	row = us.DB.QueryRow(`
 		  select email, password_hash from users
-			where user_id=$1;
+			where id=$1;
 		`, user.ID)
 	if err := row.Scan(&user.Email, &user.PasswordHash); err != nil {
 		if err == sql.ErrNoRows {
@@ -96,7 +97,7 @@ func (ss *SessionService) hash(token string) string {
 // the sessions DB, stores its token hash and user_id
 // and assigns the session id into the session object.
 func (ss *SessionService) storeTokenHash(s Session) error {
-	isNewUser, err := ss.isNewUser(s.UserID)
+	isNewUser, err := ss.isNewUser(s.UserID, &s.ID)
 	if err == nil {
 		if isNewUser { // A new user_id so we create a new entry.
 			row := ss.DB.QueryRow(`
@@ -123,13 +124,12 @@ func (ss *SessionService) storeTokenHash(s Session) error {
 	return nil
 }
 
-func (ss *SessionService) isNewUser(userID uint) (bool, error) {
-	var sessionID uint
+func (ss *SessionService) isNewUser(userID uint, pSessionID *uint) (bool, error) {
 	row := ss.DB.QueryRow(`
 		  select id from sessions
 			where user_id=$1;
 		`, userID)
-	switch err := row.Scan(&sessionID); err {
+	switch err := row.Scan(pSessionID); err {
 	case sql.ErrNoRows:
 		log.Printf("User is new and does not have a session.")
 		return true, nil

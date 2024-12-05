@@ -114,6 +114,7 @@ func (u Users) ProcessSignIn() http.HandlerFunc {
 		}
 
 		// Creating a cookie with the session token and setting it in the response.
+		fmt.Printf("controllers.ProcessSignIn: token: %s\n", session.Token)
 		http.SetCookie(w, NewCookie(CookieSession, session.Token))
 		http.Redirect(w, r, "/users/me", http.StatusFound)
 	}
@@ -125,9 +126,9 @@ func (u Users) CurrentUser() http.HandlerFunc {
 		tokenCookie, err := r.Cookie(CookieSession)
 		if err != nil {
 			log.Println(err)
-			http.Error(w,
-				"No active session, please sign in.",
-				http.StatusInternalServerError)
+			// http.Error(w,
+			// 	"No active session, please sign in.",
+			// 	http.StatusInternalServerError)
 			http.Redirect(w, r, "/signin", http.StatusFound)
 			return
 		}
@@ -136,9 +137,9 @@ func (u Users) CurrentUser() http.HandlerFunc {
 		user, err := u.SessionService.User(u.UserService, tokenCookie.Value)
 		if err != nil {
 			log.Println(err)
-			http.Error(w,
-				"No active session, please sign in.",
-				http.StatusInternalServerError)
+			// http.Error(w,
+			// 	"No active session, please sign in.",
+			// 	http.StatusInternalServerError)
 			http.Redirect(w, r, "/signin", http.StatusFound)
 			return
 		}
