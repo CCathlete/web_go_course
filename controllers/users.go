@@ -64,7 +64,7 @@ func (u Users) Create() http.HandlerFunc {
 		}
 
 		// Creating a cookie with the session token and setting it in the response.
-		http.SetCookie(w, NewCookie(CookieSession, session.Token))
+		http.SetCookie(w, NewCookie(CookieNameSession, session.Token))
 		http.Redirect(w, r, "/users/me", http.StatusFound)
 	}
 }
@@ -115,7 +115,7 @@ func (u Users) ProcessSignIn() http.HandlerFunc {
 
 		// Creating a cookie with the session token and setting it in the response.
 		fmt.Printf("controllers.ProcessSignIn: token: %s\n", session.Token)
-		http.SetCookie(w, NewCookie(CookieSession, session.Token))
+		http.SetCookie(w, NewCookie(CookieNameSession, session.Token))
 		http.Redirect(w, r, "/users/me", http.StatusFound)
 	}
 }
@@ -123,12 +123,9 @@ func (u Users) ProcessSignIn() http.HandlerFunc {
 // Takes up a web requests and prints put the current user information.
 func (u Users) CurrentUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		tokenCookie, err := r.Cookie(CookieSession)
+		tokenCookie, err := r.Cookie(CookieNameSession)
 		if err != nil {
 			log.Println(err)
-			// http.Error(w,
-			// 	"No active session, please sign in.",
-			// 	http.StatusInternalServerError)
 			http.Redirect(w, r, "/signin", http.StatusFound)
 			return
 		}
@@ -144,7 +141,26 @@ func (u Users) CurrentUser() http.HandlerFunc {
 			return
 		}
 
-		fmt.Fprintf(w, "Current user: %v\n", user)
-		// fmt.Fprintf(w, "Current user: %s\n", user.Email)
+		// fmt.Fprintf(w, "Current user: %v\n", user)
+		fmt.Fprintf(w, "Current user: %s\n", user.Email)
+	}
+}
+
+func (u Users) SignOut() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		tokenCookie, err := r.Cookie(CookieNameSession)
+		if err != nil { // If there's no cookie, there's nothing to delete.
+			http.Redirect(w, r, "/signin", http.StatusFound)
+			return
+		}
+		// Deleting the tokenHash from the DB.
+		err = u.SessionService.Delete(tokenCookie.Value)
+		if err != nil {
+			log.Printf("controllers.SignOut: %v\n", err)
+			http.Error(w, "Something went wrong", http.StatusInternalServerError)
+			return
+		}
+		deleteCookie(w, CookieNameSession)
+		http.Redirect(w, r, "/signin", http.StatusFound)
 	}
 }

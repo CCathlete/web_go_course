@@ -36,6 +36,30 @@ func StaticGetHandler(usersC Users, tpl Template, data any, routeSuffix string) 
 	}
 }
 
+func StaticPostHandler(usersC Users, tpl Template, routeSuffix string) http.HandlerFunc {
+	switch routeSuffix {
+
+	case "users":
+		// Sending back the form (inside the signup template)
+		// with the information for a creation of a new user.
+		usersC.Templates.New = tpl
+		return usersC.Create()
+
+	case "signin":
+		// In a case of a post request to /signin with a form
+		// with the information for authentication of an existing user.
+		return usersC.ProcessSignIn()
+
+	case "signout":
+		return usersC.SignOut()
+
+	default:
+		return func(w http.ResponseWriter, r *http.Request) {
+			fmt.Println("There's no POST request for ", routeSuffix)
+		}
+	}
+}
+
 func FAQ(tpl Template) http.HandlerFunc {
 	questions := []struct{ Question, Answer string }{
 		{
@@ -54,27 +78,6 @@ func FAQ(tpl Template) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		tpl.Execute(w, r, questions)
-	}
-}
-
-func StaticPostHandler(usersC Users, tpl Template, routeSuffix string) http.HandlerFunc {
-	switch routeSuffix {
-
-	case "users":
-		// Sending back the form (inside the signup template)
-		// with the information for a creation of a new user.
-		usersC.Templates.New = tpl
-		return usersC.Create()
-
-	case "signin":
-		// In a case of a post request to /signin with a form
-		// with the information for authentication of an existing user.
-		return usersC.ProcessSignIn()
-
-	default:
-		return func(w http.ResponseWriter, r *http.Request) {
-			fmt.Println("There's no POST request for ", routeSuffix)
-		}
 	}
 }
 
